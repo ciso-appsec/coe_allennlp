@@ -7,12 +7,12 @@ CoE mirror of supported AllenNLP models
 
 Note: In the steps below, I've cloned the coe-allennlp and coe_allennlp-models GitHub repos in root/publicgithub/coe_allennlp/ and root/publicgithub/coe_allennlp-models/. Update the paths if you clone the repos to a different folder.
 
-Note: TODO: we need another proxy repo to Docker Hub instead of using hyc-waca-docker-virtual
+Note: You may want to use proxy repo to Docker Hub instead of pulling directly from Docker Hub, to avoid the Docker Hub rate limit. Just use `Your-proxy-repo/python:3.8.17` as the docker image in the commands below instead of just `python:3.8.17`.
 
 
 - allennlp python build to install the package from local source code:
 ```
-docker run --rm -v /root/publicgithub:/root/publicgithub -it docker-na-public.artifactory.swg-devops.com/hyc-waca-docker-virtual/python:3.8.17 bash
+docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.8.17 bash
 
 # In the docker container:
 cd /root/publicgithub/coe_allennlp
@@ -33,7 +33,7 @@ docker run --rm coe-allennlp/coe-allennlp:latest test-install
 
 - allennlp-models python build to create the python wheel (.whl) file:
 ```
-docker run --rm -v /root/publicgithub:/root/publicgithub -it docker-na-public.artifactory.swg-devops.com/hyc-waca-docker-virtual/python:3.8.17 bash -c 'cd root/publicgithub/coe_allennlp-models/ ; python setup.py bdist_wheel'
+docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.8.17 bash -c 'cd root/publicgithub/coe_allennlp-models/ ; python setup.py bdist_wheel'
 ```
 
 - allennlp-models docker build:
