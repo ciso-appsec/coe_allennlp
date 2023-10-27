@@ -1,3 +1,54 @@
+
+# coe_allennlp
+
+CoE mirror of supported AllenNLP models
+
+### How To build:
+
+Note: In the steps below, I've cloned the coe-allennlp and coe_allennlp-models GitHub repos in root/publicgithub/coe_allennlp/ and root/publicgithub/coe_allennlp-models/. Update the paths if you clone the repos to a different folder.
+
+Note: You may want to use proxy repo to Docker Hub instead of pulling directly from Docker Hub, to avoid the Docker Hub rate limit. Just use `Your-proxy-repo/python:3.8.17` as the docker image in the commands below instead of just `python:3.8.17`.
+
+
+- allennlp python build to install the package from local source code:
+```
+docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.8.17 bash
+
+# In the docker container:
+cd /root/publicgithub/coe_allennlp
+python -m venv my-virtual-env
+source my-virtual-env/bin/activate
+pip install -U pip setuptools wheel
+pip install --editable .[dev,all]
+allennlp test-install
+```
+
+- allennlp docker build:
+```
+docker build -f Dockerfile -t coe-allennlp/coe-allennlp:latest .
+
+# Run a small test:
+docker run --rm coe-allennlp/coe-allennlp:latest test-install
+```
+
+- allennlp-models python build to create the python wheel (.whl) file:
+```
+docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.8.17 bash -c 'cd root/publicgithub/coe_allennlp-models/ ; python setup.py bdist_wheel'
+```
+
+- allennlp-models docker build:
+    - Note: You must complete the allennlp docker build first, for the base image.
+    - Note: You must complete the allennlp-models python build first, for the wheel (.whl) file.
+```
+docker build --no-cache --progress=plain --build-arg ALLENNLP_IMAGE=coe-allennlp/coe-allennlp --build-arg ALLENNLP_TAG=latest -f Dockerfile -t coe-allennlp/coe-allennlp-models:latest .
+
+# Test that installing allennlp-models didn't break the allennlp installation:
+docker run --rm coe-allennlp/coe-allennlp-models:latest test-install
+```
+
+
+# Original README.md
+
 <div align="center">
     <br>
     <img src="https://raw.githubusercontent.com/allenai/allennlp/main/docs/img/allennlp-logo-dark.png" width="400"/>
