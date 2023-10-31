@@ -1,8 +1,6 @@
 ################################
 ###### Core dependencies #######
 ################################
-torch<1.13.0
-torchvision<0.14.0
 cached-path<1.2.0
 spacy<3.4
 transformers<4.21
