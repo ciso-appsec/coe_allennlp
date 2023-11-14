@@ -33,7 +33,7 @@ docker run --rm coe-allennlp/coe-allennlp:latest test-install
 
 - allennlp-models python build to create the python wheel (.whl) file:
 ```
-docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.8.17 bash -c 'cd root/publicgithub/coe_allennlp-models/ ; python setup.py bdist_wheel'
+docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.9.16 bash -c 'cd root/publicgithub/coe_allennlp-models/ ; python setup.py bdist_wheel'
 ```
 
 - allennlp-models docker build:
