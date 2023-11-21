@@ -7,12 +7,12 @@ CoE mirror of supported AllenNLP models
 
 Note: In the steps below, I've cloned the coe-allennlp and coe_allennlp-models GitHub repos in root/publicgithub/coe_allennlp/ and root/publicgithub/coe_allennlp-models/. Update the paths if you clone the repos to a different folder.
 
-Note: You may want to use proxy repo to Docker Hub instead of pulling directly from Docker Hub, to avoid the Docker Hub rate limit. Just use `Your-proxy-repo/python:3.8.17` as the docker image in the commands below instead of just `python:3.8.17`.
+Note: You may want to use proxy repo to Docker Hub instead of pulling directly from Docker Hub, to avoid the Docker Hub rate limit. Just use `Your-proxy-repo/python:3.9.16` as the docker image in the commands below instead of just `python:3.9.16`.
 
 
 - allennlp python build to install the package from local source code:
 ```
-docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.8.17 bash
+docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.9.16 bash
 
 # In the docker container:
 cd /root/publicgithub/coe_allennlp
@@ -21,6 +21,17 @@ source my-virtual-env/bin/activate
 pip install -U pip setuptools wheel
 pip install --editable .[dev,all]
 allennlp test-install
+
+# Still in the docker container, do a Mend scan:
+echo userKey=YOUR_USER_KEY >> wss-unified-agent.config
+echo apiKey=YOUR_API_KEY >> wss-unified-agent.config
+echo wss.url=YOUR_MEND_SERVER_URL/agent >> wss-unified-agent.config
+echo productName=YOUR_MEND_PRODUCT_NAME >> wss-unified-agent.config
+echo projectName=coeAllenNLP >> wss-unified-agent.config
+apt-get update
+apt install default-jre
+curl -OL https://unified-agent.s3.amazonaws.com/wss-unified-agent.jar
+java -jar wss-unified-agent.jar
 ```
 
 - allennlp docker build:
@@ -34,6 +45,20 @@ docker run --rm coe-allennlp/coe-allennlp:latest test-install
 - allennlp-models python build to create the python wheel (.whl) file:
 ```
 docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.9.16 bash -c 'cd root/publicgithub/coe_allennlp-models/ ; python setup.py bdist_wheel'
+
+# Do a Mend scan:
+docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.9.16 bash
+# The following commands are run inside the Docker container:
+cd root/publicgithub/coe_allennlp-models/
+echo userKey=YOUR_USER_KEY >> wss-unified-agent.config
+echo apiKey=YOUR_API_KEY >> wss-unified-agent.config
+echo wss.url=YOUR_MEND_SERVER_URL/agent >> wss-unified-agent.config
+echo productName=YOUR_MEND_PRODUCT_NAME >> wss-unified-agent.config
+echo projectName=coeAllenNLPModels >> wss-unified-agent.config
+apt-get update
+apt install default-jre
+curl -OL https://unified-agent.s3.amazonaws.com/wss-unified-agent.jar
+java -jar wss-unified-agent.jar
 ```
 
 - allennlp-models docker build:
@@ -44,6 +69,21 @@ docker build --no-cache --progress=plain --build-arg ALLENNLP_IMAGE=coe-allennlp
 
 # Test that installing allennlp-models didn't break the allennlp installation:
 docker run --rm coe-allennlp/coe-allennlp-models:latest test-install
+```
+
+## Mend Docker image scanning
+
+Note that this scan doesn't seem to find any python dependency vulnerabilities.
+```
+curl https://downloads.mend.io/cli/linux_amd64/mend -o mend && chmod +x mend
+
+./mend auth login
+# Mend environment: Other → [YOUR_MEND_SERVER_URL]
+# Product: [x]  SCA (Dependencies) / CN (Image)
+# User Email: [YOUR_EMAIL]
+# User Key: [YOUR KEY From the User Profile page in the Mend UI]
+
+./mend image [YOUR DOCKER IMAGE, for example: coe-allennlp/coe-allennlp-models:latest]
 ```
 
 

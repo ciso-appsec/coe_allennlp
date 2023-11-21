@@ -1,3 +1,11 @@
+
+# files for code scanning
+
+whitesource/
+wss-unified-agent.config
+wss-unified-agent.jar
+
+
 # build artifacts
 
 .eggs/
