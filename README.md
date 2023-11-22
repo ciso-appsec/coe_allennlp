@@ -9,6 +9,7 @@ Note: In the steps below, I've cloned the coe-allennlp and coe_allennlp-models G
 
 Note: You may want to use proxy repo to Docker Hub instead of pulling directly from Docker Hub, to avoid the Docker Hub rate limit. Just use `Your-proxy-repo/python:3.9.16` as the docker image in the commands below instead of just `python:3.9.16`.
 
+Note: The `checklist` package was not installed in the pre-CoE default allennlp python build, but `checklist` was included in the pre-CoE allennlp Docker images. Right now, there's this issue with installing `checklist`, so `pip install allennlp[checklist]` and `pip install checklist==0.0.11` both fail: https://github.com/marcotcr/checklist/issues/144. We haven't yet found a solution, so the CoE docker images are currently missing the `checklist` package.
 
 - allennlp python build to install the package from local source code:
 ```
@@ -16,10 +17,12 @@ docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.9.16 bash
 
 # In the docker container:
 cd /root/publicgithub/coe_allennlp
+rm -rf my-virtual-env
 python -m venv my-virtual-env
 source my-virtual-env/bin/activate
 pip install -U pip setuptools wheel
-pip install --editable .[dev,all]
+# Use .[dev,all] instead of .[all] to install dev dependencies also (for unit tests, etc).
+pip install --editable .[all]
 allennlp test-install
 
 # Still in the docker container, do a Mend scan:
@@ -31,6 +34,12 @@ echo projectName=coeAllenNLP >> wss-unified-agent.config
 apt-get update
 apt install default-jre
 curl -OL https://unified-agent.s3.amazonaws.com/wss-unified-agent.jar
+# Be careful if you create files named like temp-requirements.txt, the Mend can decide to include it in the scan.
+# Optionally, deactivate your virtual env and install virtualenv so Mend can succesfully do `pip install` as part of the scan.
+# If you don't do this, Mend will still scan your requirements.txt file. You may want to do `pip freeze > pipfreeze.txt; diff requirements.txt pipfreeze.txt`
+# to check that all dependencies are included in requirements.txt.
+deactivate
+pip install virtualenv --user
 java -jar wss-unified-agent.jar
 ```
 
@@ -40,6 +49,31 @@ docker build -f Dockerfile -t coe-allennlp/coe-allennlp:latest .
 
 # Run a small test:
 docker run --rm coe-allennlp/coe-allennlp:latest test-install
+```
+
+- allennlp run unit tests:
+```
+git checkout 80fb6061e568cb9d6ab5d45b661e86eb61b92c82 # The code before the CoE updates
+--OR--
+git checkout main # Or checkout whatever code you want to test
+
+
+docker run --rm --entrypoint bash -it -v /root/publicgithub:/root/publicgithub allennlp/allennlp:latest # Last release from AllenAI
+--OR--
+docker build -f Dockerfile -t coe-allennlp/coe-allennlp:latest . && docker run --rm --entrypoint bash -it -v /root/publicgithub:/root/publicgithub coe-allennlp/coe-allennlp:latest # Use the docker image you built yourself
+
+# Inside the docker container:
+cd /root/publicgithub/coe_allennlp
+pip install -r dev-requirements.txt
+# The checklist feature requires additional non-default dependencies to be installed, so skip those tests.
+# One of the tests in f1_measure_test.py seems to get stuck, or is extremely slow, so skip that.
+# tests/training/metrics/fbeta_measure_test.py also gets stuck quite often. These issues with geetting stuck may be due to CoE updates?
+pytest --ignore-glob='*checklist*' --ignore='tests/training/metrics/f1_measure_test.py'
+# If you want to run just one file, run `pytest path/to/the/file.py`
+
+# With the code before the CoE updates and the last  docker image released from AllenAI, only the following two tests fail. (Perhaps this is because we're running as root, so we always have 'write' permissions even when we're not supposed to?):
+# FAILED tests/common/file_utils_test.py::TestFileLock::test_locking - Failed: DID NOT RAISE <class 'PermissionError'>
+# FAILED tests/common/file_utils_test.py::TestTensorCache::test_tensor_cache - assert False
 ```
 
 - allennlp-models python build to create the python wheel (.whl) file:
@@ -58,6 +92,7 @@ echo projectName=coeAllenNLPModels >> wss-unified-agent.config
 apt-get update
 apt install default-jre
 curl -OL https://unified-agent.s3.amazonaws.com/wss-unified-agent.jar
+pip install virtualenv --user
 java -jar wss-unified-agent.jar
 ```
 
@@ -69,6 +104,22 @@ docker build --no-cache --progress=plain --build-arg ALLENNLP_IMAGE=coe-allennlp
 
 # Test that installing allennlp-models didn't break the allennlp installation:
 docker run --rm coe-allennlp/coe-allennlp-models:latest test-install
+```
+
+- allennlp-models run unit tests
+    - Note: check out the commit you want to test, and build the allennlp-models docker image first. Or, use the `allennlp/models:latest` docker image from dockerio for the last official build from the original AllenNLP poject.
+```
+docker run --rm --entrypoint bash -it -v /root/publicgithub:/root/publicgithub coe-allennlp/coe-allennlp-models:latest
+
+# In the docker container:
+
+cd /root/publicgithub/coe_allennlp-models/
+pip install -r dev-requirements.txt
+# The checklist feature requires additional non-default dependencies to be installed, so skip those tests.
+# The Makefile has a `-m "not pretrained_model_test and not pretrained_config_test"` option, it seems to be because those tests are very slow.
+# tests/classification/interpret/sst_test.py got stuck for me too or is just slow (on my retry, it passed after 2 minutes), so skip that.
+pytest --ignore-glob='*checklist*' -m "not pretrained_model_test and not pretrained_config_test" --ignore=tests/classification/interpret/sst_test.py
+# All tests from the above command should pass.
 ```
 
 ## Mend Docker image scanning
