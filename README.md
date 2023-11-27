@@ -104,6 +104,7 @@ mv dev-requirements.txt dev-requirements
 deactivate
 pip install virtualenv --user
 java -jar wss-unified-agent.jar
+mv dev-requirements dev-requirements.txt
 ```
 
 - allennlp-models docker build:
