@@ -70,7 +70,7 @@ cd /root/publicgithub/coe_allennlp
 pip install -r dev-requirements.txt
 # The checklist feature requires additional non-default dependencies to be installed, so skip those tests.
 # One of the tests in f1_measure_test.py seems to get stuck, or is extremely slow, so skip that.
-# tests/training/metrics/fbeta_measure_test.py also gets stuck quite often. These issues with geetting stuck may be due to CoE updates?
+# tests/training/metrics/fbeta_measure_test.py also gets stuck quite often. These issues with getting stuck may be due to CoE updates?
 pytest --ignore-glob='*checklist*' --ignore='tests/training/metrics/f1_measure_test.py'
 # If you want to run just one file, run `pytest path/to/the/file.py`
 
