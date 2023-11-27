@@ -98,10 +98,6 @@ curl -OL https://unified-agent.s3.amazonaws.com/wss-unified-agent.jar
 # Be careful if you create files named like temp-requirements.txt, Mend will include them in the scan.
 # Make sure Mend scans only the released dependencies, not the dev-requirements:
 mv dev-requirements.txt dev-requirements
-# Optionally, deactivate your virtual env and install virtualenv so Mend can succesfully do `pip install` as part of the scan.
-# If you don't do this, Mend will still scan your requirements.txt file. You may want to do `pip freeze > pipfreeze.log; diff requirements.txt pipfreeze.log`
-# to check that all dependencies are included in requirements.txt.
-deactivate
 pip install virtualenv --user
 java -jar wss-unified-agent.jar
 mv dev-requirements dev-requirements.txt
