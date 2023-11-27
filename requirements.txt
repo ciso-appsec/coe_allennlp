@@ -42,6 +42,10 @@ more-itertools==10.1.0
 murmurhash==1.0.10
 nltk==3.8.1
 numpy==1.24.4
+nvidia-cublas-cu11==11.10.3.66
+nvidia-cuda-nvrtc-cu11==11.7.99
+nvidia-cuda-runtime-cu11==11.7.99
+nvidia-cudnn-cu11==8.5.0.96
 packaging==23.2
 pathtools==0.1.2
 pathy==0.10.3
