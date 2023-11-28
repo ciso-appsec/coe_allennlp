@@ -137,7 +137,7 @@ curl https://downloads.mend.io/cli/linux_amd64/mend -o mend && chmod +x mend
 
 ./mend auth login
 # Mend environment: Other → [YOUR_MEND_SERVER_URL]
-# Product: [x]  SCA (Dependencies) / CN (Image)
+# Product: [x]  SCA (Dependencies) / CN (Image)
 # User Email: [YOUR_EMAIL]
 # User Key: [YOUR KEY From the User Profile page in the Mend UI]
 
