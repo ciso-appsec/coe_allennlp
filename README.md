@@ -71,6 +71,8 @@ pip install -r dev-requirements.txt
 # The checklist feature requires additional non-default dependencies to be installed, so skip those tests.
 # One of the tests in f1_measure_test.py seems to get stuck, or is extremely slow, so skip that.
 # tests/training/metrics/fbeta_measure_test.py also gets stuck quite often. These issues with getting stuck may be due to CoE updates?
+# If you interrupt the tests and restart them immediately, you will get these errors: `The server socket has failed to bind to 0.0.0.0:29500 (errno: 98 - Address already in use).`
+# To avoid that error after interrrupting the tests, kill the leftover python process that's using port 29500
 pytest --ignore-glob='*checklist*' --ignore='tests/training/metrics/f1_measure_test.py'
 # If you want to run just one file, run `pytest path/to/the/file.py`
 
