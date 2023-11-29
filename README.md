@@ -79,6 +79,21 @@ pytest --ignore-glob='*checklist*' --ignore='tests/training/metrics/f1_measure_t
 # FAILED tests/common/file_utils_test.py::TestTensorCache::test_tensor_cache - assert False
 ```
 
+- allennlp-models python build (pip install)
+```
+docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.9.16 bash
+# Inside th docker container:
+cd /root/publicgithub/coe_allennlp-models/
+rm -rf my-virtual-env
+python -m venv my-virtual-env
+source my-virtual-env/bin/activate
+pip install -U pip setuptools wheel
+pip install --editable .
+# Use `pip freeze` to check if there are unpinned dependencies:
+pip freeze > pipfreeze.log
+diff requirements.txt pipfreeze.log
+```
+
 - allennlp-models python build to create the python wheel (.whl) file:
 ```
 docker run --rm -v /root/publicgithub:/root/publicgithub -it python:3.9.16 bash -c 'cd root/publicgithub/coe_allennlp-models/ ; python setup.py bdist_wheel'
